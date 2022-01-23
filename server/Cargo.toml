@@ -1,0 +1,34 @@
+[package]
+name = "server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+common = { path = "../common" }
+
+actix-web = "4.0.0-beta.20"
+diesel = { version = "1.4.8", features = ["postgres", "r2d2", "serde_json"] }
+async-trait = "0.1.52"
+serde = { version = "1.0.133", features = ["derive"] }
+serde_json = "1.0.74"
+tokio = { version = "1.15.0", features = ["fs"] }
+toml = "0.5.8"
+reqwest = { version = "0.11.9", features = ["json"] }
+clap = { version = "3.0.10", features = ["derive", "env"] }
+dotenv = "0.15.0"
+lettre = { version = "0.10.0-rc.4", features = ["tokio1-rustls-tls", "pool", "smtp-transport", "builder"], default-features = false }
+derive_more = "0.99.17"
+tera = "1.15.0"
+deadpool-redis = "0.10.2"
+rand = "0.8.4"
+base64 = "0.13.0"
+url = "2.2.2"
+futures = "0.3.19"
+diesel_migrations = "1.4.0"
+bcrypt-pbkdf = "0.7.2"
+tracing = "0.1.29"
+tracing-subscriber = { version = "0.3.6", features = ["registry", "env-filter", "ansi"] }
+opentelemetry = { version = "0.16.0", features = ["rt-tokio-current-thread"] }
+opentelemetry-jaeger = { version = "0.15.0", features = ["rt-tokio-current-thread"] }
+tracing-opentelemetry = "0.16.0"
+tracing-actix-web = "0.5.0-beta.10"

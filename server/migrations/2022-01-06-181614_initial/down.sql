@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS authentication_methods;
+DROP TABLE IF EXISTS sso;
+DROP TABLE IF EXISTS password_auth;
+DROP TABLE IF EXISTS users;
+--DROP TABLE IF EXISTS realms;
