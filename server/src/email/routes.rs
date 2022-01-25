@@ -5,10 +5,7 @@ use actix_web::{
 use serde::Deserialize;
 
 use crate::{
-    db::DatabaseContext,
-    error::{user::UserNotFound, EndpointResult},
-    provider::flow::FlowResponse,
-    redis::RedisPool,
+    db::DatabaseContext, error::EndpointResult, provider::flow::FlowResponse, redis::RedisPool,
 };
 
 use super::{verify::EmailVerification, Email, EmailClient, EmailVerificationSettings};

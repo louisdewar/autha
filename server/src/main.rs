@@ -1,10 +1,9 @@
-use actix_web::{web, App, HttpServer, guard};
+use actix_web::{guard, web, App, HttpServer};
 use clap::StructOpt;
 use config::Config;
 use provider::{setup_providers, ProviderContext};
 
 pub use reqwest::Client as HTTPClient;
-use reqwest::header::AUTHORIZATION;
 use tracing::info;
 use tracing_actix_web::TracingLogger;
 
@@ -77,23 +76,14 @@ async fn main() -> std::io::Result<()> {
 
     let database_context = web::Data::new(DatabaseContext::new(db_pool.clone()));
 
-    let bearer_header: &'static str = Box::leak(Box::new(format!("Bearer {}", config.shared_secret.clone())));
+    let bearer_header: &'static str =
+        Box::leak(Box::new(format!("Bearer {}", config.shared_secret.clone())));
     info!("starting server at 127.0.0.1:8080");
     HttpServer::new(move || {
-        // let guard = guard::fn_guard(|ctx| {
-        //     if let Some(auth) = ctx.head().headers().get("Authorization") {
-        //         if auth == bearer_header {
-        //             true
-        //         } else {
-        //             false
-        //         }
-        //     } else {
-        //         false
-        //     }
-        // });
         let guard = guard::Header("Authorization", bearer_header);
-        let mut main_scope = web::scope("").guard(guard)
-        .configure(provider_routes.clone());
+        let mut main_scope = web::scope("")
+            .guard(guard)
+            .configure(provider_routes.clone());
 
         if let Some(email_routes) = email_routes.clone() {
             main_scope = main_scope.configure(email_routes);

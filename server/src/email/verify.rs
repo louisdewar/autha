@@ -97,12 +97,6 @@ impl EmailVerification {
         let verification_code =
             base64::encode_config(&verification_numbers, base64::URL_SAFE_NO_PAD);
 
-        // let verification_code = rand::thread_rng()
-        //     .sample_iter(rand::distributions::Standard)
-        //     .take(INVITE_ID_LEN)
-        //     .map(|b: u8| format!("{:02x}", b))
-        //     .collect();
-
         let mut conn = self.redis_pool.get().await?;
 
         redis::action::set_email_verification(
@@ -156,7 +150,7 @@ impl EmailVerification {
     ) -> Result<User, Box<dyn EndpointError>> {
         let mut conn = self.redis_pool.get().await?;
 
-        let meta = redis::action::find_email_verification(&mut conn, &verification_code)
+        let meta = redis::action::take_email_verification(&mut conn, verification_code)
             .await?
             .ok_or(InvalidVerificationCode)?;
 
