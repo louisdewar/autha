@@ -11,6 +11,7 @@ use crate::{
 };
 
 use actix_web::web;
+use lettre::Address;
 use rand::Rng;
 use serde::Deserialize;
 use tera::{Context, Tera};
@@ -156,11 +157,12 @@ impl EmailVerification {
         let mut conn = self.redis_pool.get().await?;
 
         let meta = redis::action::find_email_verification(&mut conn, &verification_code)
-                .await?
-                .ok_or(InvalidVerificationCode)?;
+            .await?
+            .ok_or(InvalidVerificationCode)?;
 
-
-        let user = db_context.mark_email_as_verified(meta.user_id, meta.email).await?;
+        let user = db_context
+            .mark_email_as_verified(meta.user_id, meta.email)
+            .await?;
 
         Ok(user)
     }
@@ -176,5 +178,10 @@ pub async fn start_verify_flow(
     let email = user.email.clone().ok_or(NoEmail)?;
     verification.new_verification(user, &email).await?;
 
-    Ok(FlowResponse::incomplete(SystemFlow::VerifyEmail { email }))
+    let email: Address = email.parse().expect("email in database was not valid");
+
+    Ok(FlowResponse::incomplete(SystemFlow::VerifyEmail {
+        start_letter: email.user().chars().next().unwrap().into(),
+        domain: email.domain().to_string(),
+    }))
 }

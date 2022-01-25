@@ -239,6 +239,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "autha_client"
+version = "0.1.0"
+dependencies = [
+ "derive_more",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -460,17 +471,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "client"
-version = "0.1.0"
-dependencies = [
- "derive_more",
- "reqwest",
- "serde",
- "serde_json",
- "tokio",
-]
-
-[[package]]
 name = "combine"
 version = "4.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -482,14 +482,6 @@ dependencies = [
  "pin-project-lite",
  "tokio",
  "tokio-util",
-]
-
-[[package]]
-name = "common"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -2046,7 +2038,6 @@ dependencies = [
  "base64",
  "bcrypt-pbkdf",
  "clap",
- "common",
  "deadpool-redis",
  "derive_more",
  "diesel",

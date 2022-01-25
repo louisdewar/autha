@@ -57,11 +57,10 @@ async fn verify(
     let request = request.into_inner();
 
     let user = email_verification
-        .verify_email(
-            &db_context,
-            &request.verification_code,
-        )
+        .verify_email(&db_context, &request.verification_code)
         .await?;
 
+    // Maybe we shouldn't respond with authenticated, maybe respond telling a
+    // user their email has been verified but now they need to login
     FlowResponse::authenticated(user).respond_to(&req).await
 }

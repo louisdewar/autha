@@ -41,9 +41,11 @@ pub enum FlowResponse<T: Serialize> {
 #[serde(tag = "type")]
 #[serde(rename_all = "snake_case")]
 pub enum SystemFlow {
-    VerifyEmail { email: String },
+    VerifyEmail {
+        start_letter: String,
+        domain: String,
+    },
 }
-
 
 impl FlowResponse<()> {
     pub fn authenticated(user: User) -> Self {
