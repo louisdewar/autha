@@ -1,4 +1,4 @@
-use derive_more::{From, Error, Display};
+use derive_more::{Display, Error, From};
 use reqwest::StatusCode;
 use serde::Deserialize;
 
@@ -15,9 +15,9 @@ pub enum RequestError {
 }
 
 #[derive(From, Debug, Error, Display)]
-#[display(fmt="autha error: {} ({})", error, status_code)]
+#[display(fmt = "autha error: {} ({})", error, status_code)]
 pub struct AuthaError {
     pub error: String,
     pub error_message: Option<String>,
-    pub status_code: StatusCode
+    pub status_code: StatusCode,
 }

@@ -35,9 +35,4 @@ joinable!(authentication_methods -> users (user_id));
 joinable!(password_auth -> users (user_id));
 joinable!(sso -> users (user_id));
 
-allow_tables_to_appear_in_same_query!(
-    authentication_methods,
-    password_auth,
-    sso,
-    users,
-);
+allow_tables_to_appear_in_same_query!(authentication_methods, password_auth, sso, users,);

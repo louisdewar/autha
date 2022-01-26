@@ -94,4 +94,3 @@ pub fn get_password_auth(
         .first(conn)
         .optional()
 }
-

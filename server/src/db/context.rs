@@ -2,11 +2,11 @@ use actix_web::web;
 use diesel::PgConnection;
 use serde_json::Value;
 
-use crate::error::{DynamicEndpointError, database::QueryError, user::UsernameOrEmailExists};
+use crate::error::{database::QueryError, user::UsernameOrEmailExists, DynamicEndpointError};
 
 use super::{
     model::{NewUser, PasswordAuth, User},
-    PgPool, was_unique_key_violation,
+    was_unique_key_violation, PgPool,
 };
 
 pub struct DatabaseContext {
@@ -34,7 +34,8 @@ impl DatabaseContext {
     }
 
     pub async fn get_user_by_id(&self, user_id: i32) -> Result<Option<User>, DynamicEndpointError> {
-        let user =self.run_query(move |conn| Ok(super::actions::get_user_by_id(conn, user_id)?))
+        let user = self
+            .run_query(move |conn| Ok(super::actions::get_user_by_id(conn, user_id)?))
             .await?;
 
         Ok(user)
@@ -45,12 +46,13 @@ impl DatabaseContext {
         user_id: i32,
         email: String,
     ) -> Result<User, DynamicEndpointError> {
-        let user = self.run_query(move |conn| {
-            Ok(super::actions::mark_email_as_verified(
-                conn, user_id, &email,
-            )?)
-        })
-        .await?;
+        let user = self
+            .run_query(move |conn| {
+                Ok(super::actions::mark_email_as_verified(
+                    conn, user_id, &email,
+                )?)
+            })
+            .await?;
 
         Ok(user)
     }
@@ -62,18 +64,18 @@ impl DatabaseContext {
         hashed_password: String,
         salt: String,
     ) -> Result<PasswordAuth, DynamicEndpointError> {
-        let password_auth = self.run_query(move |conn| {
-            Ok(super::actions::upsert_password_auth(
-                conn,
-                &super::model::PasswordAuth {
-                    user_id,
-                    hashed_password,
-                    salt,
-                },
-            )?)
-        })
-        .await?;
-
+        let password_auth = self
+            .run_query(move |conn| {
+                Ok(super::actions::upsert_password_auth(
+                    conn,
+                    &super::model::PasswordAuth {
+                        user_id,
+                        hashed_password,
+                        salt,
+                    },
+                )?)
+            })
+            .await?;
 
         Ok(password_auth)
     }
@@ -83,7 +85,8 @@ impl DatabaseContext {
         &self,
         user_id: i32,
     ) -> Result<Option<PasswordAuth>, DynamicEndpointError> {
-        let password_auth  = self.run_query(move |conn| Ok(super::actions::get_password_auth(conn, user_id)?))
+        let password_auth = self
+            .run_query(move |conn| Ok(super::actions::get_password_auth(conn, user_id)?))
             .await?;
         Ok(password_auth)
     }
@@ -98,22 +101,24 @@ impl DatabaseContext {
         email: String,
         extra: Value,
     ) -> Result<User, DynamicEndpointError> {
-
-        match self.run_query(move |conn| {
-            Ok(super::actions::insert_user(
-                conn,
-                &NewUser {
-                    username,
-                    email: Some(email),
-                    extra,
-                },
-            )?)
-        })
-        .await {
+        match self
+            .run_query(move |conn| {
+                Ok(super::actions::insert_user(
+                    conn,
+                    &NewUser {
+                        username,
+                        email: Some(email),
+                        extra,
+                    },
+                )?)
+            })
+            .await
+        {
             Ok(user) => Ok(user),
-            Err(QueryError::Diesel(e)) if was_unique_key_violation(&e) => Err(UsernameOrEmailExists.into()),
-            Err(e) => Err(e.into())
-
+            Err(QueryError::Diesel(e)) if was_unique_key_violation(&e) => {
+                Err(UsernameOrEmailExists.into())
+            }
+            Err(e) => Err(e.into()),
         }
     }
 
@@ -121,13 +126,14 @@ impl DatabaseContext {
         &self,
         username_or_email: String,
     ) -> Result<Option<User>, DynamicEndpointError> {
-        let user = self.run_query(move |conn| {
-            Ok(super::actions::get_user_by_username_or_email(
-                conn,
-                &username_or_email,
-            )?)
-        })
-        .await?;
+        let user = self
+            .run_query(move |conn| {
+                Ok(super::actions::get_user_by_username_or_email(
+                    conn,
+                    &username_or_email,
+                )?)
+            })
+            .await?;
 
         Ok(user)
     }

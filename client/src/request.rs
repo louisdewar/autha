@@ -1,8 +1,10 @@
-use reqwest::{Response, RequestBuilder};
+use reqwest::{RequestBuilder, Response};
 use serde::{de::DeserializeOwned, Deserialize};
 
-use crate::{Client, error::{AuthaError, RequestError}};
-
+use crate::{
+    error::{AuthaError, RequestError},
+    Client,
+};
 
 #[derive(Deserialize)]
 struct AuthaErrorPayload {
@@ -11,7 +13,10 @@ struct AuthaErrorPayload {
 }
 
 impl Client {
-    pub(crate) async fn request<T: DeserializeOwned>(&self, response: RequestBuilder) -> Result<Result<T, AuthaError>, RequestError>  {
+    pub(crate) async fn request<T: DeserializeOwned>(
+        &self,
+        response: RequestBuilder,
+    ) -> Result<Result<T, AuthaError>, RequestError> {
         let response = response.bearer_auth(&self.shared_secret);
         let response = response.send().await?;
 
@@ -21,7 +26,11 @@ impl Client {
             Ok(response)
         } else {
             let response: AuthaErrorPayload = response.json().await?;
-            Err(AuthaError { error: response.error, error_message: response.error_message, status_code })
+            Err(AuthaError {
+                error: response.error,
+                error_message: response.error_message,
+                status_code,
+            })
         };
 
         Ok(response)

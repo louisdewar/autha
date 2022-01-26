@@ -61,4 +61,3 @@ impl ProviderContext {
         self.db_context.mark_email_as_verified(user_id, email).await
     }
 }
-

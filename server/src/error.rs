@@ -9,11 +9,10 @@ use tokio::task::JoinError;
 pub type DynamicEndpointError = Box<dyn EndpointError>;
 pub type EndpointResult<T = HttpResponse> = Result<T, DynamicEndpointError>;
 
+pub mod database;
 pub mod email;
 pub mod user;
 pub mod username;
-pub mod database;
-
 
 pub use diesel::result::Error as DieselError;
 

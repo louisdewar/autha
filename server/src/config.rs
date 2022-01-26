@@ -24,4 +24,3 @@ impl Config {
         toml::from_str(&config).expect("invalid format for config file")
     }
 }
-

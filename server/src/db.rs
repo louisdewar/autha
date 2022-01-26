@@ -22,7 +22,10 @@ pub fn run_migrations(connection: &PgConnection) {
 pub fn was_unique_key_violation(error: &crate::error::DieselError) -> bool {
     matches!(
         error,
-        crate::error::DieselError::DatabaseError(diesel::result::DatabaseErrorKind::UniqueViolation, _),
+        crate::error::DieselError::DatabaseError(
+            diesel::result::DatabaseErrorKind::UniqueViolation,
+            _
+        ),
     )
 }
 
@@ -39,4 +42,3 @@ pub async fn get_pg_pool(database_url: &str) -> PgPool {
         .build(manager)
         .expect("Failed to create DB pool")
 }
-
