@@ -4,7 +4,7 @@ use config::Config;
 use provider::{setup_providers, ProviderContext};
 
 pub use reqwest::Client as HTTPClient;
-use tracing::info;
+use tracing::{info, warn};
 use tracing_actix_web::TracingLogger;
 
 use crate::db::DatabaseContext;
@@ -29,7 +29,10 @@ pub mod util;
 async fn main() -> std::io::Result<()> {
     telemetry::init_telemetry();
 
-    dotenv::dotenv().expect("failed to load .env");
+    if let Err(e) = dotenv::dotenv() {
+        warn!(error=%e, debug=?e, "failed to read .env");
+    }
+
     let app = cli::App::parse();
     let config = web::Data::new(Config::load_config(&app.config_path).await);
 
@@ -78,7 +81,8 @@ async fn main() -> std::io::Result<()> {
 
     let bearer_header: &'static str =
         Box::leak(Box::new(format!("Bearer {}", config.shared_secret.clone())));
-    info!("starting server at 127.0.0.1:8080");
+    // TODO: make a cli param for port / bind address
+    info!("starting server at 0.0.0.0:8080");
     HttpServer::new(move || {
         let guard = guard::Header("Authorization", bearer_header);
         let mut main_scope = web::scope("")
@@ -95,7 +99,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(TracingLogger::default())
             .service(main_scope)
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("0.0.0.0", 8080))?
     .run()
     .await
 }

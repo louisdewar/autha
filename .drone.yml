@@ -1,0 +1,56 @@
+---
+kind: pipeline
+name: deploy
+
+steps:
+  - name: build_server
+    image: docker:dind
+    privileged: true
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
+    commands:
+      - docker build -t registry.dewardt.uk/autha/server:drone-build-"$DRONE_BUILD_NUMBER" -f deploy/Dockerfile .
+  - name: publish
+    image: docker:dind
+    privileged: true
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
+    environment:
+      DOCKER_PASSWORD:
+        from_secret: DOCKER_PASSWORD
+    commands:
+      - echo $DOCKER_PASSWORD | docker login https://registry.dewardt.uk --username autha --password-stdin
+      - docker tag registry.dewardt.uk/autha/server:drone-build-"$DRONE_BUILD_NUMBER" registry.dewardt.uk/autha/server:production
+      - docker push registry.dewardt.uk/autha/server:production
+    depends_on:
+      - build_server
+trigger:
+  event:
+    - promote
+  target:
+    - production
+
+volumes:
+  - name: dockersock
+    host:
+      path: /var/run/docker.sock
+
+---
+kind: pipeline
+name: lint
+
+steps:
+  - name: clippy/fmt
+    image: rust:latest
+    commands:
+      - rustup component add clippy
+      - rustup component add rustfmt
+      - cargo clippy --workspace
+      - cargo fmt --all -- --check
+
+trigger:
+  event:
+    - push
+    - pull_request
