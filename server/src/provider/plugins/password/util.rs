@@ -1,4 +1,4 @@
-use crate::util::generate_base64_url_safe_string;
+use crate::util::generate_base64_string;
 
 const SALT_BYTES_LEN: usize = 16;
 const ROUNDS: u32 = 50;
@@ -18,7 +18,7 @@ pub fn hash_password(password: &str, salt: &str) -> String {
 }
 
 pub fn generate_salt() -> String {
-    generate_base64_url_safe_string(SALT_BYTES_LEN)
+    generate_base64_string(SALT_BYTES_LEN)
 }
 
 pub fn verify(password: &str, hashed_password: &str, salt: &str) -> bool {

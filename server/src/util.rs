@@ -31,6 +31,17 @@ pub fn validate_username(username: &str) -> Result<(), Box<dyn EndpointError>> {
     Ok(())
 }
 
+pub fn generate_base64_string(len: usize) -> String {
+    use rand::Rng;
+
+    let salt: Vec<u8> = rand::thread_rng()
+        .sample_iter(rand::distributions::Standard)
+        .take(len)
+        .collect();
+
+    base64::encode(salt)
+}
+
 pub fn generate_base64_url_safe_string(len: usize) -> String {
     use rand::Rng;
 
