@@ -11,6 +11,7 @@ use crate::{
     },
     impl_endpoint_error,
     provider::{context::ProviderContext, flow::FlowResponse, AuthenticationProvider},
+    util::generate_base64_url_safe_string,
 };
 
 use derive_more::{Display, Error};
@@ -74,16 +75,6 @@ const SALT_BYTES_LEN: usize = 16;
 const ROUNDS: u32 = 50;
 const HASH_SIZE_BYTES: usize = 32;
 const MAX_PASSWORD_LEN: usize = 256;
-
-fn gen_salt() -> String {
-    use rand::Rng;
-
-    let salt: Vec<u8> = rand::thread_rng()
-        .sample_iter(rand::distributions::Standard)
-        .take(SALT_BYTES_LEN)
-        .collect();
-    base64::encode(salt)
-}
 
 fn hash_password(password: &str, salt: &str) -> String {
     let mut output = vec![0; HASH_SIZE_BYTES];
@@ -149,7 +140,7 @@ async fn register(
         )
         .await?;
 
-    let salt = gen_salt();
+    let salt = generate_base64_url_safe_string(SALT_BYTES_LEN);
     let hashed_password = hash_password(&params.password, &salt);
 
     db_context
