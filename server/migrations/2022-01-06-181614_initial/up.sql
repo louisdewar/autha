@@ -3,7 +3,8 @@ CREATE TABLE users(
     username TEXT NOT NULL UNIQUE,
     email TEXT UNIQUE,
     email_verified boolean NOT NULL DEFAULT false,
-    extra JSONB DEFAULT '{}'::jsonb NOT NULL
+    extra JSONB DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamptz NOT NULL default now()
 );
 
 CREATE TABLE password_auth(

@@ -1,4 +1,5 @@
 use crate::db::schema::*;
+use chrono::{DateTime, Utc};
 use serde::Serialize;
 use serde_json::Value;
 
@@ -9,6 +10,7 @@ pub struct User {
     pub email: Option<String>,
     pub email_verified: bool,
     pub extra: Value,
+    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Insertable)]

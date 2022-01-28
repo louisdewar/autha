@@ -33,15 +33,11 @@ pub async fn register(
         return Err(InvalidPassword.into());
     }
 
+    let email_domain = email.domain();
     if let Some(allowed_domains) = &provider.config.allowed_email_domains {
-        let email_domain = email.domain();
-        let mut allowed = false;
-        for domain in allowed_domains {
-            if email_domain == domain {
-                allowed = true;
-                break;
-            }
-        }
+        let allowed = allowed_domains
+            .iter()
+            .any(|allowed_domain| email_domain.ends_with(allowed_domain.as_str()));
 
         if !allowed {
             return Err(DomainNotAllowed.into());
