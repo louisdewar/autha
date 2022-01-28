@@ -1,8 +1,4 @@
-use actix_web::{
-    body::{BodyStream, BoxBody},
-    web, HttpResponse, Responder,
-};
-use futures::FutureExt;
+use actix_web::{web, HttpResponse};
 use serde::Serialize;
 use serde_json::Value;
 
@@ -10,7 +6,7 @@ use crate::{
     config::Config,
     db::model::User,
     email::verify::{self, EmailVerification},
-    error::{email::NoEmail, EndpointResult},
+    error::EndpointResult,
 };
 
 /// A response that a successfull flow might generate.
@@ -88,42 +84,3 @@ impl<T: Serialize> FlowResponse<T> {
     }
 }
 
-// No longer async which greatly complicated matters
-// impl<T: Serialize> Responder for FlowResponse<T> {
-//     type Body = BoxBody;
-//
-//     fn respond_to(self, req: &actix_web::HttpRequest) -> actix_web::HttpResponse<Self::Body> {
-//         let response = async {
-//             match self {
-//                 FlowResponse::Authenticated { user } => {
-//                     let config: &web::Data<Config> = req.app_data().unwrap();
-//
-//                     if !user.email_verified && !config.email_verify.allow_login_before_verification
-//                     {
-//                         let verification: &web::Data<EmailVerification> = req.app_data().unwrap();
-//                         return verify::start_verify_flow(
-//                             user.id,
-//                             user.email.ok_or(NoEmail)?,
-//                             verification.clone(),
-//                         )
-//                         .await;
-//                     }
-//
-//                     Ok(FlowResponse::Authenticated { user })
-//                 }
-//                 flow => Ok(flow),
-//             }
-//         };
-//
-//         Box::pin(BodyStream::new(
-//             async move {
-//                 match response.await {
-//                     Ok(response) => HttpResponse::Ok().json(response),
-//                     Err(e) => e.respond_to(req),
-//                 }
-//             }
-//             .into_stream(),
-//         ))
-//         .into()
-//     }
-// }
