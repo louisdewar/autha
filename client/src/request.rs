@@ -1,10 +1,7 @@
-use reqwest::{RequestBuilder, Response};
+use reqwest::{IntoUrl, RequestBuilder};
 use serde::{de::DeserializeOwned, Deserialize};
 
-use crate::{
-    error::{AuthaError, RequestError},
-    Client,
-};
+use crate::error::{AuthaError, RequestError};
 
 #[derive(Deserialize)]
 struct AuthaErrorPayload {
@@ -12,13 +9,29 @@ struct AuthaErrorPayload {
     error_message: Option<String>,
 }
 
-impl Client {
-    pub(crate) async fn request<T: DeserializeOwned>(
+pub(crate) struct HttpClient {
+    http: reqwest::Client,
+    shared_secret: String,
+}
+
+impl HttpClient {
+    pub fn new(shared_secret: String) -> Self {
+        Self {
+            http: reqwest::Client::new(),
+            shared_secret,
+        }
+    }
+
+    pub fn post(&self, url: impl IntoUrl) -> RequestBuilder {
+        self.http.post(url)
+    }
+
+    pub async fn request<T: DeserializeOwned>(
         &self,
-        response: RequestBuilder,
+        request: RequestBuilder,
     ) -> Result<Result<T, AuthaError>, RequestError> {
-        let response = response.bearer_auth(&self.shared_secret);
-        let response = response.send().await?;
+        let request = request.bearer_auth(&self.shared_secret);
+        let response = request.send().await?;
 
         let status_code = response.status();
         let response = if status_code.is_success() {

@@ -16,6 +16,6 @@ impl Client {
         url.path_segments_mut().unwrap().extend(["email", "verify"]);
         let response: RequestBuilder = self.http.post(url).json(&payload);
 
-        Ok(self.request(response).await?)
+        Ok(self.http.request(response).await?)
     }
 }

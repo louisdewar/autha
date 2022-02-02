@@ -15,6 +15,7 @@ use lettre::Address;
 use rand::Rng;
 use serde::Deserialize;
 use tera::{Context, Tera};
+use tracing::info;
 use url::Url;
 
 use super::EmailClient;
@@ -139,6 +140,7 @@ impl EmailVerification {
                 content,
             })
             .await?;
+        info!(user_id=?user.id, username=?user.username, email=?email, "sending verification email to user");
 
         Ok(())
     }
@@ -157,6 +159,7 @@ impl EmailVerification {
         let user = db_context
             .mark_email_as_verified(meta.user_id, meta.email)
             .await?;
+        info!(user_id=?user.id, username=?user.username, email=?user.email, "user verified email");
 
         Ok(user)
     }

@@ -10,6 +10,8 @@ pub struct User {
     pub email: Option<String>,
     pub email_verified: bool,
     pub extra: Value,
+    pub token_generation: String,
+    pub admin: bool,
     pub created_at: DateTime<Utc>,
 }
 
@@ -19,6 +21,7 @@ pub struct NewUser {
     pub username: String,
     pub email: Option<String>,
     pub extra: Value,
+    pub token_generation: String,
 }
 
 #[derive(Insertable, Queryable, AsChangeset)]

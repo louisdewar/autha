@@ -2,18 +2,23 @@ use std::path::Path;
 
 use serde::Deserialize;
 
-use crate::email::{EmailClientConfig, EmailVerificationSettings};
+use crate::{
+    email::{EmailClientConfig, EmailVerificationSettings},
+    jwt::JWTConfig,
+};
 
 pub type DynamicProviderConfig = serde_json::Value;
 
 #[derive(Deserialize)]
 pub struct Config {
     pub shared_secret: String,
+    pub instance_id: String,
     #[serde(default)]
     pub email_smtp: Option<EmailClientConfig>,
     #[serde(default)]
     pub email_verify: EmailVerificationSettings,
     pub providers: Vec<DynamicProviderConfig>,
+    pub jwt: JWTConfig,
 }
 
 impl Config {

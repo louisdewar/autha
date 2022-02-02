@@ -13,13 +13,14 @@ pub struct User {
     pub email: Option<String>,
     pub email_verified: bool,
     pub extra: Value,
+    pub admin: bool,
 }
 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
 #[serde(rename_all = "snake_case")]
 pub enum FlowResponse {
-    Authenticated { user: User },
+    Authenticated { user: User, refresh_token: String },
     Incomplete { payload: Value },
 }
 
@@ -36,6 +37,6 @@ impl Client {
             .extend(["provider", provider_name, "f", flow_name]);
         let response = self.http.post(url).json(&payload);
 
-        Ok(self.request(response).await?)
+        Ok(self.http.request(response).await?)
     }
 }

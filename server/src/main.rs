@@ -1,6 +1,7 @@
 use actix_web::{guard, web, App, HttpServer};
 use clap::StructOpt;
 use config::Config;
+use jsonwebtoken::{DecodingKey, EncodingKey};
 use provider::{setup_providers, ProviderContext};
 
 pub use reqwest::Client as HTTPClient;
@@ -8,6 +9,7 @@ use tracing::{info, warn};
 use tracing_actix_web::TracingLogger;
 
 use crate::db::DatabaseContext;
+use crate::jwt::JwtSettings;
 
 #[macro_use]
 extern crate diesel;
@@ -23,6 +25,7 @@ mod redis;
 mod telemetry;
 
 pub mod email;
+pub mod jwt;
 pub mod util;
 
 #[actix_web::main]
@@ -51,7 +54,17 @@ async fn main() -> std::io::Result<()> {
             .expect("failed to get db connection to run migrations"),
     );
 
-    let provider_context = web::Data::new(ProviderContext::new(db_pool.clone()));
+    let jwt_settings = web::Data::new(JwtSettings {
+        encoding_key: EncodingKey::from_secret(config.jwt.secret.as_bytes()),
+        decoding_key: DecodingKey::from_secret(config.jwt.secret.as_bytes()).into_static(),
+        token_aud: config.instance_id.clone(),
+    });
+
+    let provider_context = web::Data::new(ProviderContext::new(
+        db_pool.clone(),
+        config.clone(),
+        jwt_settings.clone(),
+    ));
     let provider_manager = setup_providers(provider_context, &config).await;
 
     let provider_routes = provider_manager.configure_provider_routes();
@@ -87,7 +100,8 @@ async fn main() -> std::io::Result<()> {
         let guard = guard::Header("Authorization", bearer_header);
         let mut main_scope = web::scope("")
             .guard(guard)
-            .configure(provider_routes.clone());
+            .configure(provider_routes.clone())
+            .configure(jwt::configure_routes(jwt_settings.clone()));
 
         if let Some(email_routes) = email_routes.clone() {
             main_scope = main_scope.configure(email_routes);

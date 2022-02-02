@@ -2,7 +2,10 @@ use actix_web::web;
 use diesel::PgConnection;
 use serde_json::Value;
 
-use crate::error::{database::QueryError, user::UsernameOrEmailExists, DynamicEndpointError};
+use crate::{
+    error::{database::QueryError, user::UsernameOrEmailExists, DynamicEndpointError},
+    jwt::TOKEN_GENERATION_LEN,
+};
 
 use super::{
     model::{NewUser, PasswordAuth, User},
@@ -94,7 +97,7 @@ impl DatabaseContext {
     /// Then this will insert the user into the database, if the username is taken then this will
     /// return an error.
     ///
-    /// TODO: separate upsert_user such that on-conflict it updates the value field
+    /// TODO: separate upsert_user such that on-conflict it updates the extra field
     pub async fn insert_user(
         &self,
         username: String,
@@ -109,6 +112,9 @@ impl DatabaseContext {
                         username,
                         email: Some(email),
                         extra,
+                        token_generation: crate::util::generate_base64_url_safe_string(
+                            TOKEN_GENERATION_LEN,
+                        ),
                     },
                 )?)
             })
@@ -131,6 +137,24 @@ impl DatabaseContext {
                 Ok(super::actions::get_user_by_username_or_email(
                     conn,
                     &username_or_email,
+                )?)
+            })
+            .await?;
+
+        Ok(user)
+    }
+
+    pub async fn set_user_admin_status(
+        &self,
+        user_id: i32,
+        admin_status: bool,
+    ) -> Result<User, DynamicEndpointError> {
+        let user = self
+            .run_query(move |conn| {
+                Ok(super::actions::set_user_admin_status(
+                    conn,
+                    user_id,
+                    admin_status,
                 )?)
             })
             .await?;

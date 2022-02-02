@@ -175,6 +175,7 @@ enum OpenIDConnectIncompleteResponse {
 
 async fn start_sso(
     provider: web::Data<OpenIDProvider>,
+    provider_context: web::Data<ProviderContext>,
     params: web::Json<StartSSOParams>,
     req: HttpRequest,
 ) -> EndpointResult<impl Responder> {
@@ -192,7 +193,7 @@ async fn start_sso(
             url: redirect_uri.into(),
         },
     }
-    .respond_to(&req)
+    .respond_to(&req, provider_context.as_ref())
     .await
 }
 

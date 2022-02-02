@@ -4,37 +4,6 @@ use super::model::{NewUser, PasswordAuth, User};
 use super::schema::{password_auth, users};
 use crate::error::DieselError;
 
-// use crate::error::EndpointError;
-//
-// use super::PgPool;
-//
-// pub type ModelResult<T> = Result<T, Box<dyn EndpointError>>;
-// //pub type DBConnection<'a> = PooledConnection<'a, DieselConnectionManager<PgConnection>>;
-// //pub type DBConnection = bb8_diesel::DieselConnection<>;
-//
-// pub struct Model {
-//     db_pool: PgPool
-// }
-//
-// impl Model {
-//     async fn db_connection(&self) -> ModelResult<impl Deref<Target = PgConnection>> {
-//         let pool = self.db_pool.clone();
-//         let connection = tokio::task::spawn_blocking(move || pool.get()).await??;
-//
-//         Ok(connection)
-//     }
-//     // pub async fn db_connection(&self) -> ModelResult<DBConnection<'static>> {
-//     //     let connection = self.db_pool.get().await?;
-//
-//     //     Ok(connection)
-//     // }
-//     //pub async fn run_query<F: Fn()>
-//
-//     pub async fn get_user_by_username(&self) {
-//
-//     }
-// }
-
 pub fn get_user_by_id(conn: &PgConnection, user_id: i32) -> Result<Option<User>, DieselError> {
     users::table
         .filter(users::columns::id.eq(user_id))
@@ -71,6 +40,16 @@ pub fn mark_email_as_verified(
     )
     .set(users::columns::email_verified.eq(true))
     .get_result(conn)
+}
+
+pub fn set_user_admin_status(
+    conn: &PgConnection,
+    user_id: i32,
+    admin_status: bool,
+) -> Result<User, DieselError> {
+    diesel::update(users::table.filter(users::columns::id.eq(user_id)))
+        .set(users::columns::admin.eq(admin_status))
+        .get_result(conn)
 }
 
 pub fn upsert_password_auth(

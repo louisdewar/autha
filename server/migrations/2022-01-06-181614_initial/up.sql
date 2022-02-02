@@ -4,6 +4,8 @@ CREATE TABLE users(
     email TEXT UNIQUE,
     email_verified boolean NOT NULL DEFAULT false,
     extra JSONB DEFAULT '{}'::jsonb NOT NULL,
+    token_generation TEXT NOT NULL,
+    admin boolean NOT NULL default false,
     created_at timestamptz NOT NULL default now()
 );
 

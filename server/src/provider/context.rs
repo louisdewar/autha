@@ -2,22 +2,32 @@ use actix_web::web;
 use lettre::Address;
 use serde_json::Value;
 
+use crate::config::Config;
 use crate::db::model::User;
 use crate::db::{DatabaseContext, PgPool};
 use crate::error::email::AddressParseError;
 use crate::error::DynamicEndpointError;
+use crate::jwt::JwtSettings;
 use crate::HTTPClient;
 
 pub struct ProviderContext {
     db_context: DatabaseContext,
     http_client: HTTPClient,
+    pub config: web::Data<Config>,
+    pub jwt_settings: web::Data<JwtSettings>,
 }
 
 impl ProviderContext {
-    pub fn new(db_pool: web::Data<PgPool>) -> Self {
+    pub fn new(
+        db_pool: web::Data<PgPool>,
+        config: web::Data<Config>,
+        jwt_settings: web::Data<JwtSettings>,
+    ) -> Self {
         ProviderContext {
             db_context: DatabaseContext::new(db_pool),
             http_client: HTTPClient::new(),
+            config,
+            jwt_settings,
         }
     }
 
@@ -28,6 +38,10 @@ impl ProviderContext {
         self.db_context
             .get_user_by_username_or_email(username_or_email)
             .await
+    }
+
+    pub async fn get_user_by_id(&self, user_id: i32) -> Result<Option<User>, DynamicEndpointError> {
+        Ok(self.db_context.get_user_by_id(user_id).await?)
     }
 
     pub fn http_client(&self) -> &HTTPClient {

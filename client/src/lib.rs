@@ -1,27 +1,36 @@
+use error::StartupError;
+use jwt::JwtInfo;
+use request::HttpClient;
 use reqwest::Url;
 
 pub mod email;
 pub mod error;
 pub mod flow;
+pub mod jwt;
 pub mod request;
 
 pub struct Client {
+    http: HttpClient,
     autha_endpoint: Url,
-    http: reqwest::Client,
-    shared_secret: String,
+    jwt_info: JwtInfo,
 }
 
 impl Client {
-    pub fn new(autha_endpoint: Url, shared_secret: String) -> Self {
+    pub async fn new(autha_endpoint: Url, shared_secret: String) -> Result<Self, StartupError> {
         assert!(
             !autha_endpoint.cannot_be_a_base(),
             "autha endpoint must be a base URL"
         );
 
-        Client {
-            http: reqwest::Client::new(),
+        let http = HttpClient::new(shared_secret);
+        let jwt_info = JwtInfo::get(&http, autha_endpoint.clone())
+            .await
+            .map_err(StartupError::Jwt)?;
+
+        Ok(Client {
+            http,
             autha_endpoint,
-            shared_secret,
-        }
+            jwt_info,
+        })
     }
 }

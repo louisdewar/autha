@@ -5,7 +5,10 @@ use actix_web::{
 use serde::Deserialize;
 
 use crate::{
-    db::DatabaseContext, error::EndpointResult, provider::flow::FlowResponse, redis::RedisPool,
+    db::DatabaseContext,
+    error::EndpointResult,
+    provider::{flow::FlowResponse, ProviderContext},
+    redis::RedisPool,
 };
 
 use super::{verify::EmailVerification, Email, EmailClient, EmailVerificationSettings};
@@ -50,6 +53,7 @@ async fn verify(
     email_verification: web::Data<EmailVerification>,
     request: web::Json<VerificationRequest>,
     db_context: web::Data<DatabaseContext>,
+    provider_context: web::Data<ProviderContext>,
 ) -> EndpointResult {
     let request = request.into_inner();
 
@@ -59,5 +63,7 @@ async fn verify(
 
     // Maybe we shouldn't respond with authenticated, maybe respond telling a
     // user their email has been verified but now they need to login
-    FlowResponse::authenticated(user).respond_to(&req).await
+    FlowResponse::authenticated(user)
+        .respond_to(&req, &provider_context)
+        .await
 }

@@ -15,3 +15,9 @@ pub struct LoginParams {
     pub username_or_email: String,
     pub password: String,
 }
+
+#[derive(Deserialize)]
+pub struct ChangePasswordParams {
+    pub old_password: String,
+    pub new_password: String,
+}

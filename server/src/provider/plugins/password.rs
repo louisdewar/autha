@@ -35,5 +35,6 @@ impl AuthenticationProvider for PasswordProvider {
     fn configure_flows(&self, config: &mut actix_web::web::ServiceConfig) {
         config.route("register", web::post().to(route::register));
         config.route("login", web::post().to(route::login));
+        // config.route("change_password", web::post().to(route::change_password));
     }
 }

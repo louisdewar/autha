@@ -13,7 +13,7 @@ use crate::{
 
 use super::{
     error::{IncorrectCredentials, InvalidPassword, PasswordAuthNotEnabled},
-    request::{LoginParams, RegisterParams},
+    request::{ChangePasswordParams, LoginParams, RegisterParams},
     util::{generate_salt, hash_password, validate_password, verify},
     PasswordProvider,
 };
@@ -59,7 +59,9 @@ pub async fn register(
         .upsert_password_auth(user.id, hashed_password, salt)
         .await?;
 
-    FlowResponse::authenticated(user).respond_to(&req).await
+    FlowResponse::authenticated(user)
+        .respond_to(&req, &provider_context)
+        .await
 }
 
 pub async fn login(
@@ -94,6 +96,44 @@ pub async fn login(
         return Err(IncorrectCredentials.into());
     }
 
-    FlowResponse::authenticated(user).respond_to(&req).await
+    FlowResponse::authenticated(user)
+        .respond_to(&req, &provider_context)
+        .await
 }
 
+pub async fn change_password(
+    req: HttpRequest,
+    db_context: web::Data<DatabaseContext>,
+    provider_context: web::Data<ProviderContext>,
+    params: web::Json<ChangePasswordParams>,
+) -> EndpointResult {
+    let params = params.into_inner();
+
+    todo!();
+
+    // NOTE/TODO:
+    // With a timing attack whether an username or email exists or not could be detected.
+    // This doesn't really matter for usernames but it probably does for emails.
+    // Either remove the ability for emails to be used or add a random delay.
+
+    // Then again you can figure out if an email is used in the register form
+    // let user = provider_context
+    //     .get_user_by_username_or_email(params.username_or_email)
+    //     .await?
+    //     .ok_or(IncorrectCredentials)?;
+
+    // let password_auth = db_context
+    //     .get_password_auth(user.id)
+    //     .await?
+    //     .ok_or(PasswordAuthNotEnabled)?;
+
+    // if !verify(
+    //     &params.password,
+    //     &password_auth.hashed_password,
+    //     &password_auth.salt,
+    // ) {
+    //     return Err(IncorrectCredentials.into());
+    // }
+
+    // FlowResponse::authenticated(user).respond_to(&req).await
+}

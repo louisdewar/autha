@@ -28,6 +28,8 @@ table! {
         email -> Nullable<Text>,
         email_verified -> Bool,
         extra -> Jsonb,
+        token_generation -> Text,
+        admin -> Bool,
         created_at -> Timestamptz,
     }
 }
