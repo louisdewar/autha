@@ -10,8 +10,8 @@ steps:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
-      - docker build -t registry.dewardt.uk/autha/server:drone-build-"$DRONE_BUILD_NUMBER" -f deploy/Dockerfile .
-  - name: publish
+      - docker build -t autha/server:drone-build-"$DRONE_BUILD_NUMBER" -f deploy/Dockerfile .
+  - name: publish registry.dewardt.uk
     image: docker:dind
     privileged: true
     volumes:
@@ -21,16 +21,38 @@ steps:
       DOCKER_PASSWORD:
         from_secret: DOCKER_PASSWORD
     commands:
-      - echo $DOCKER_PASSWORD | docker login https://registry.dewardt.uk --username autha --password-stdin
-      - docker tag registry.dewardt.uk/autha/server:drone-build-"$DRONE_BUILD_NUMBER" registry.dewardt.uk/autha/server:production
+      - echo "$DOCKER_PASSWORD" | docker login https://registry.dewardt.uk --username autha --password-stdin
+      - docker tag autha/server:drone-build-"$DRONE_BUILD_NUMBER" registry.dewardt.uk/autha/server:production
       - docker push registry.dewardt.uk/autha/server:production
     depends_on:
       - build_server
+    when:
+      target:
+        - production
+  - name: publish ghcr
+    image: docker:dind
+    privileged: true
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
+    environment:
+      GHCR_PASSWORD:
+        from_secret: GHCR_PASSWORD
+    commands:
+      - echo "$GHCR_PASSWORD" | docker login https://ghcr.io --username louisdewar --password-stdin
+      - docker tag autha/server:drone-build-"$DRONE_BUILD_NUMBER" ghcr.io/louisdewar/autha:production
+      - docker push ghcr.io/louisdewar/autha:production
+    depends_on:
+      - build_server
+    when:
+      target:
+        - ghcr_production
 trigger:
   event:
     - promote
   target:
     - production
+    - ghcr_production
 
 volumes:
   - name: dockersock
