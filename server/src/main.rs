@@ -83,7 +83,7 @@ async fn main() -> std::io::Result<()> {
         let email_client = web::Data::new(email_settings.build());
         Some(email::configure_routes(
             email_client,
-            redis_pool,
+            redis_pool.clone(),
             config.email_verify.clone(),
         ))
     } else {
@@ -109,6 +109,7 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .app_data(config.clone())
+            .app_data(redis_pool.clone())
             .app_data(database_context.clone())
             .wrap(TracingLogger::default())
             .service(main_scope)

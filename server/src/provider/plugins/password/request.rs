@@ -21,3 +21,14 @@ pub struct ChangePasswordParams {
     pub old_password: String,
     pub new_password: String,
 }
+
+#[derive(Deserialize)]
+pub struct RequestResetPasswordParams {
+    pub email: String,
+}
+
+#[derive(Deserialize)]
+pub struct ResetPasswordParams {
+    pub verification_code: String,
+    pub new_password: String,
+}

@@ -11,9 +11,10 @@ mod error;
 
 use self::error::{
     DecodeTokenError, EncodeAccessTokenError, EncodeRefreshTokenError, MismatchingTokenGeneration,
-    MissingTokenGeneration, NotRefreshToken, UserNotAdmin,
+    MissingTokenGeneration, NotAccessToken, NotRefreshToken, UserNotAdmin,
 };
 
+mod extractor;
 mod route;
 
 pub use route::configure_routes;
@@ -35,6 +36,21 @@ pub struct Token {
 
 pub struct RefreshToken {
     user_id: i32,
+}
+
+pub struct AccessToken {
+    user_id: i32,
+    admin: bool,
+}
+
+impl AccessToken {
+    pub fn id(&self) -> i32 {
+        self.user_id
+    }
+
+    pub fn is_admin(&self) -> bool {
+        self.admin
+    }
 }
 
 #[derive(Deserialize)]
@@ -87,6 +103,20 @@ impl ProviderContext {
 
         Ok(RefreshToken {
             user_id: token.user_id,
+        })
+    }
+
+    pub fn decode_access_token(&self, token: &str) -> Result<AccessToken, DynamicEndpointError> {
+        let token = self.decode_token(token)?;
+        if !token.scopes.iter().any(|scope| scope == "access") {
+            return Err(NotAccessToken.into());
+        }
+
+        let admin = token.scopes.iter().any(|scope| scope == "admin");
+
+        Ok(AccessToken {
+            user_id: token.user_id,
+            admin,
         })
     }
 

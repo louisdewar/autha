@@ -102,6 +102,7 @@ impl Client {
     fn decode_token(&self, token: &str) -> Result<SerializableToken, VerifyAccessTokenError> {
         let mut validation = Validation::default();
         validation.set_audience(&[&self.jwt_info.aud]);
+        validation.leeway = 4 * 60;
 
         let decoded_token: TokenData<SerializableToken> =
             jsonwebtoken::decode(token, &self.jwt_info.jwt_decoding_secret, &validation)

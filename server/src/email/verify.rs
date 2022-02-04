@@ -100,7 +100,7 @@ impl EmailVerification {
 
         let mut conn = self.redis_pool.get().await?;
 
-        redis::action::set_email_verification(
+        redis::action::email_verification::set_email_verification(
             &mut conn,
             user_id,
             email.to_string(),
@@ -152,9 +152,12 @@ impl EmailVerification {
     ) -> Result<User, Box<dyn EndpointError>> {
         let mut conn = self.redis_pool.get().await?;
 
-        let meta = redis::action::take_email_verification(&mut conn, verification_code)
-            .await?
-            .ok_or(InvalidVerificationCode)?;
+        let meta = redis::action::email_verification::take_email_verification(
+            &mut conn,
+            verification_code,
+        )
+        .await?
+        .ok_or(InvalidVerificationCode)?;
 
         let user = db_context
             .mark_email_as_verified(meta.user_id, meta.email)

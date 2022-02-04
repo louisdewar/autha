@@ -50,6 +50,11 @@ pub struct NotRefreshToken;
 impl_endpoint_error!(NotRefreshToken, UNAUTHORIZED, "INVALID_TOKEN");
 
 #[derive(Display, Error, Debug, From)]
+pub struct NotAccessToken;
+
+impl_endpoint_error!(NotAccessToken, UNAUTHORIZED, "INVALID_TOKEN");
+
+#[derive(Display, Error, Debug, From)]
 pub struct MissingTokenGeneration;
 
 impl_endpoint_error!(MissingTokenGeneration, UNAUTHORIZED, "INVALID_TOKEN");
@@ -72,4 +77,22 @@ impl_endpoint_error!(
     UNAUTHORIZED,
     "INVALID_TOKEN",
     "This session has been expired, please login again"
+);
+
+#[derive(Display, Error, Debug, From)]
+pub struct MissingAuthorizationHeader;
+impl_endpoint_error!(
+    MissingAuthorizationHeader,
+    UNAUTHORIZED,
+    "MISSING_TOKEN",
+    "You need to be logged in"
+);
+
+#[derive(Display, Error, Debug, From)]
+pub struct InvalidAuthorizationHeader;
+impl_endpoint_error!(
+    InvalidAuthorizationHeader,
+    UNAUTHORIZED,
+    "INVALID_TOKEN",
+    "You need to be logged in"
 );

@@ -31,3 +31,23 @@ impl_endpoint_error!(
     "INCORRECT_CREDENTIALS",
     "The username or password is incorrect"
 );
+
+#[derive(Display, Error, Debug)]
+pub struct OldPasswordIncorrect;
+
+impl_endpoint_error!(
+    OldPasswordIncorrect,
+    BAD_REQUEST,
+    "INCORRECT_PASSWORD",
+    "Your old password is not correct"
+);
+
+#[derive(Display, Error, Debug)]
+pub struct PasswordResetExpired;
+
+impl_endpoint_error!(
+    PasswordResetExpired,
+    BAD_REQUEST,
+    "EXPIRED_PASSWORD_RESET_CODE",
+    "This reset code has been used or has already expired"
+);
