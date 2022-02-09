@@ -55,7 +55,7 @@ struct IssueRefreshResponse {
     refresh_token: String,
 }
 
-fn discover_jwt_info(
+async fn discover_jwt_info(
     jwt_settings: web::Data<JwtSettings>,
     config: web::Data<Config>,
 ) -> HttpResponse {

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-actix-web = "4.0.0-beta.20"
+actix-web = "4.0.0-rc.2"
 diesel = { version = "1.4.8", features = ["postgres", "r2d2", "serde_json", "chrono"] }
 async-trait = "0.1.52"
 serde = { version = "1.0.133", features = ["derive"] }
@@ -29,7 +29,7 @@ tracing-subscriber = { version = "0.3.6", features = ["registry", "env-filter", 
 opentelemetry = { version = "0.16.0", features = ["rt-tokio-current-thread"] }
 opentelemetry-jaeger = { version = "0.15.0", features = ["rt-tokio-current-thread"] }
 tracing-opentelemetry = "0.16.0"
-tracing-actix-web = "0.5.0-beta.10"
+tracing-actix-web = "0.5.0-rc.2"
 jsonwebtoken = "7.2.0"
 jsonwebkey = { version = "0.3.4", features = ["jwt-convert"] }
 chrono = { version = "0.4.19", features = ["serde"] }
