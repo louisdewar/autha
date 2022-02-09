@@ -18,6 +18,7 @@ async fn main() {
                 "username": "testuser",
                 "password": "testpassword"
             }),
+            None,
         )
         .await
         .unwrap();
@@ -34,6 +35,7 @@ async fn main() {
                 "username_or_email": "testuser",
                 "password": "testpassword"
             }),
+            None,
         )
         .await
         .unwrap();

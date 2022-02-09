@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use actix_web::web;
 use lettre::Address;
 use serde_json::Value;
@@ -8,6 +10,7 @@ use crate::db::{DatabaseContext, PgPool};
 use crate::error::email::AddressParseError;
 use crate::error::DynamicEndpointError;
 use crate::jwt::JwtSettings;
+use crate::redis::limiter::GenericLimiter;
 use crate::HTTPClient;
 
 pub struct ProviderContext {
@@ -15,6 +18,7 @@ pub struct ProviderContext {
     http_client: HTTPClient,
     pub config: web::Data<Config>,
     pub jwt_settings: web::Data<JwtSettings>,
+    generic_limiter: Arc<GenericLimiter>,
 }
 
 impl ProviderContext {
@@ -22,13 +26,19 @@ impl ProviderContext {
         db_pool: web::Data<PgPool>,
         config: web::Data<Config>,
         jwt_settings: web::Data<JwtSettings>,
+        generic_limiter: Arc<GenericLimiter>,
     ) -> Self {
         ProviderContext {
             db_context: DatabaseContext::new(db_pool),
             http_client: HTTPClient::new(),
             config,
             jwt_settings,
+            generic_limiter,
         }
+    }
+
+    pub fn get_generic_limiter(&self) -> Arc<GenericLimiter> {
+        self.generic_limiter.clone()
     }
 
     pub async fn get_user_by_username_or_email(
@@ -38,6 +48,13 @@ impl ProviderContext {
         self.db_context
             .get_user_by_username_or_email(username_or_email)
             .await
+    }
+
+    pub async fn get_user_by_email(
+        &self,
+        email: String,
+    ) -> Result<Option<User>, DynamicEndpointError> {
+        self.db_context.get_user_by_email(email).await
     }
 
     pub async fn get_user_by_id(&self, user_id: i32) -> Result<Option<User>, DynamicEndpointError> {

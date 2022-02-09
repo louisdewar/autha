@@ -144,6 +144,17 @@ impl DatabaseContext {
         Ok(user)
     }
 
+    pub async fn get_user_by_email(
+        &self,
+        email: String,
+    ) -> Result<Option<User>, DynamicEndpointError> {
+        let user = self
+            .run_query(move |conn| Ok(super::actions::get_user_by_email(conn, &email)?))
+            .await?;
+
+        Ok(user)
+    }
+
     pub async fn set_user_admin_status(
         &self,
         user_id: i32,

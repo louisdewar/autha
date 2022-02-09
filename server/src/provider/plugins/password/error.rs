@@ -1,6 +1,6 @@
 use derive_more::{Display, Error};
 
-use crate::impl_endpoint_error;
+use crate::{create_rate_limit_error, impl_endpoint_error};
 
 #[derive(Display, Error, Debug)]
 pub struct InvalidPassword;
@@ -50,4 +50,9 @@ impl_endpoint_error!(
     BAD_REQUEST,
     "EXPIRED_PASSWORD_RESET_CODE",
     "This reset code has been used or has already expired"
+);
+
+create_rate_limit_error!(
+    TooManyResets,
+    "There have been too many password resets sent to this email, please try again later."
 );

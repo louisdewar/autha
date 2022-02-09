@@ -30,7 +30,7 @@ impl HttpClient {
         &self,
         request: RequestBuilder,
     ) -> Result<Result<T, AuthaError>, RequestError> {
-        let request = request.bearer_auth(&self.shared_secret);
+        let request = request.header("X-Autha-Shared-Secret", &self.shared_secret);
         let response = request.send().await?;
 
         let status_code = response.status();

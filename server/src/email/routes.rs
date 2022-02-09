@@ -44,7 +44,6 @@ async fn send_email(
     email: web::Json<Email>,
 ) -> EndpointResult {
     let response = email_client.send(email.into_inner()).await?;
-    dbg!(response);
     Ok(HttpResponse::Ok().into())
 }
 

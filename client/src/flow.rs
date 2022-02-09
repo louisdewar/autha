@@ -30,13 +30,19 @@ impl Client {
         provider_name: &str,
         flow_name: &str,
         payload: T,
+        bearer_auth: Option<String>,
     ) -> Result<Result<FlowResponse, AuthaError>, RequestError> {
         let mut url = self.autha_endpoint.clone();
         url.path_segments_mut()
             .unwrap()
             .extend(["provider", provider_name, "f", flow_name]);
-        let response = self.http.post(url).json(&payload);
+        let request = self.http.post(url).json(&payload);
+        let request = if let Some(bearer) = bearer_auth {
+            request.header("Authorization", bearer)
+        } else {
+            request
+        };
 
-        Ok(self.http.request(response).await?)
+        Ok(self.http.request(request).await?)
     }
 }

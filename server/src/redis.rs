@@ -1,4 +1,5 @@
 pub mod action;
+pub mod limiter;
 
 pub type RedisPool = deadpool_redis::Pool;
 pub type RedisConnection = deadpool_redis::Connection;

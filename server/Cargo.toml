@@ -33,3 +33,4 @@ tracing-actix-web = "0.5.0-beta.10"
 jsonwebtoken = "7.2.0"
 jsonwebkey = { version = "0.3.4", features = ["jwt-convert"] }
 chrono = { version = "0.4.19", features = ["serde"] }
+redis = { version = "0.21.5", features = ["tokio-comp"] }

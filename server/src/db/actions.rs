@@ -22,6 +22,13 @@ pub fn get_user_by_username_or_email(
         .optional()
 }
 
+pub fn get_user_by_email(conn: &PgConnection, email: &str) -> Result<Option<User>, DieselError> {
+    users::table
+        .filter(users::columns::email.eq(Some(email)))
+        .first(conn)
+        .optional()
+}
+
 pub fn insert_user(conn: &PgConnection, user: &NewUser) -> Result<User, DieselError> {
     diesel::insert_into(users::table)
         .values(user)

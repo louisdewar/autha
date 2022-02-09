@@ -4,7 +4,7 @@ use actix_web::{web, HttpRequest};
 use lettre::Address;
 use serde_json::json;
 use tera::Context;
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 
 use crate::{
     db::DatabaseContext,
@@ -132,11 +132,26 @@ pub async fn request_reset_password(
     db_context: web::Data<DatabaseContext>,
 ) -> EndpointResult {
     let email = params.into_inner().email;
-    // TODO: use get_user_by_email otherwise people will be able to enter a username to send spam verification emails to
-    let user = provider_context
-        .get_user_by_username_or_email(email.clone())
+
+    provider
+        .limits
+        .reset_password
+        .get_permit(&email)
         .await?
-        .ok_or(UserNotFound)?;
+        .map_err(super::error::TooManyResets::from)?;
+
+    let user = match provider_context.get_user_by_email(email.clone()).await? {
+        Some(user) => user,
+        None => {
+            warn!(email=%email, "user not found by email");
+            // Silently return the same response as if the email was reset (note: this is vulnerable to a timing attack)
+            return FlowResponse::incomplete(
+                PasswordProviderIncompleteFlow::ResetPasswordEmailSent,
+            )
+            .respond_to(&req, &provider_context)
+            .await;
+        }
+    };
 
     let password_auth = db_context
         .get_password_auth(user.id)
