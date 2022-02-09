@@ -12,7 +12,7 @@ COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 # Build application
 COPY ./server .
-RUN cargo build --release
+RUN cargo build --release --locked
 
 FROM debian:buster-slim AS runtime
 RUN apt-get update && apt-get upgrade -y && apt-get --no-install-recommends install -y libpq5 && apt-get clean && rm -rf /var/lib/apt/lists/*
