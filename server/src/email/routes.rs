@@ -43,7 +43,7 @@ async fn send_email(
     email_client: web::Data<EmailClient>,
     email: web::Json<Email>,
 ) -> EndpointResult {
-    let response = email_client.send(email.into_inner()).await?;
+    let _smtp_response = email_client.send(email.into_inner()).await?;
     Ok(HttpResponse::Ok().into())
 }
 

@@ -98,6 +98,13 @@ pub struct IssueRefreshResponse {
     pub refresh_token: String,
 }
 
+#[derive(Serialize)]
+#[serde(untagged)]
+enum MakeAdminRequest {
+    ById { user_id: i32 },
+    ByUsername { username: String },
+}
+
 impl Client {
     fn decode_token(&self, token: &str) -> Result<SerializableToken, VerifyAccessTokenError> {
         let mut validation = Validation::default();
@@ -156,17 +163,30 @@ impl Client {
         self.http.request(request).await
     }
 
-    pub async fn make_admin(&self, user_id: i32) -> Result<Result<(), AuthaError>, RequestError> {
-        #[derive(Serialize)]
-        struct MakeAdminRequest {
-            user_id: i32,
-        }
+    pub async fn make_admin_by_username(
+        &self,
+        username: String,
+    ) -> Result<Result<(), AuthaError>, RequestError> {
+        self.make_admin(MakeAdminRequest::ByUsername { username })
+            .await
+    }
 
+    pub async fn make_admin_by_id(
+        &self,
+        user_id: i32,
+    ) -> Result<Result<(), AuthaError>, RequestError> {
+        self.make_admin(MakeAdminRequest::ById { user_id }).await
+    }
+
+    async fn make_admin(
+        &self,
+        request: MakeAdminRequest,
+    ) -> Result<Result<(), AuthaError>, RequestError> {
         let mut url = self.autha_endpoint.clone();
         url.path_segments_mut()
             .unwrap()
             .extend(&["jwt", "permission", "make_admin"]);
-        let request = self.http.post(url).json(&MakeAdminRequest { user_id });
+        let request = self.http.post(url).json(&request);
         Ok(self
             .http
             .request::<serde_json::Value>(request)

@@ -36,6 +36,7 @@ pub struct Token {
 
 pub struct RefreshToken {
     user_id: i32,
+    admin: bool,
 }
 
 pub struct AccessToken {
@@ -97,12 +98,15 @@ impl ProviderContext {
             return Err(MismatchingTokenGeneration.into());
         }
 
-        if !user.admin && token.scopes.iter().any(|scope| scope == "admin") {
+        let admin_scope = token.scopes.iter().any(|scope| scope == "admin");
+
+        if !user.admin && admin_scope {
             return Err(UserNotAdmin.into());
         }
 
         Ok(RefreshToken {
             user_id: token.user_id,
+            admin: admin_scope,
         })
     }
 
@@ -127,6 +131,7 @@ impl ProviderContext {
     ) -> Result<String, DynamicEndpointError> {
         let user = self.get_user_by_id(user_id).await?.ok_or(UserNotFound)?;
 
+        // Temporarily allow token for access too
         let mut scopes = vec!["refresh".to_string(), "access".to_string()];
 
         if user.admin {
@@ -135,7 +140,6 @@ impl ProviderContext {
 
         let claims = Token {
             aud: self.jwt_settings.token_aud.clone(),
-            // Temporarily allow token for access too
             scopes,
             user_id,
             token_generation: Some(user.token_generation),
@@ -154,10 +158,15 @@ impl ProviderContext {
         &self,
         refresh_token: &RefreshToken,
     ) -> Result<String, DynamicEndpointError> {
+        let mut scopes = vec!["access".to_string()];
+
+        if refresh_token.admin {
+            scopes.push("admin".to_string());
+        }
+
         let claims = Token {
             aud: self.jwt_settings.token_aud.clone(),
-            // Temporarily allow token for access too
-            scopes: vec!["access".to_string()],
+            scopes,
             user_id: refresh_token.user_id,
             token_generation: None,
             exp: (SystemTime::now() + ACCESS_TOKEN_DURATION)

@@ -16,7 +16,7 @@ impl FromRequest for AccessToken {
 
     fn from_request(
         req: &actix_web::HttpRequest,
-        payload: &mut actix_web::dev::Payload,
+        _payload: &mut actix_web::dev::Payload,
     ) -> Self::Future {
         let auth_header = req.headers().get("AUTHORIZATION").cloned();
         let provider_context = req

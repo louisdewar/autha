@@ -3,9 +3,13 @@ use actix_web::{
     HttpResponse,
 };
 use serde::{Deserialize, Serialize};
+use tracing::info;
 
 use crate::{
-    config::Config, db::DatabaseContext, error::EndpointResult, provider::ProviderContext,
+    config::Config,
+    db::DatabaseContext,
+    error::{user::UserNotFound, EndpointResult},
+    provider::ProviderContext,
 };
 
 use super::JwtSettings;
@@ -41,8 +45,10 @@ struct AuthorizeResponse {
 }
 
 #[derive(Deserialize)]
-struct MakeAdminRequest {
-    user_id: i32,
+#[serde(untagged)]
+enum MakeAdminRequest {
+    ById { user_id: i32 },
+    ByUsername { username: String },
 }
 
 #[derive(Deserialize)]
@@ -93,8 +99,20 @@ async fn make_admin(
     database_context: web::Data<DatabaseContext>,
     request: web::Json<MakeAdminRequest>,
 ) -> EndpointResult {
-    database_context
-        .set_user_admin_status(request.user_id, true)
+    let user_id = match request.into_inner() {
+        MakeAdminRequest::ById { user_id } => user_id,
+        MakeAdminRequest::ByUsername { username } => {
+            let user = database_context
+                .get_user_by_username_or_email(username)
+                .await?
+                .ok_or(UserNotFound)?;
+            user.id
+        }
+    };
+
+    let user = database_context
+        .set_user_admin_status(user_id, true)
         .await?;
+    info!(username=%user.username, user_id=%user.id, "made user admin");
     Ok(HttpResponse::Ok().json(serde_json::json!({})))
 }

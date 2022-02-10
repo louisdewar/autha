@@ -24,7 +24,7 @@ async fn main() {
         .unwrap();
     dbg!(&response);
 
-    let response = client.make_admin(1).await.unwrap();
+    let response = client.make_admin_by_id(1).await.unwrap();
     dbg!(&response);
 
     let response = client
